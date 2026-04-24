@@ -4,49 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestor de Luz — Inmueble R-8</title>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
-
 :root {
-  --bg: #f5f3ee;
-  --surface: #ffffff;
-  --border: #e0dbd0;
-  --accent: #1a1a2e;
-  --highlight: #e8c547;
-  --highlight2: #d4a017;
-  --success: #2d6a4f;
-  --danger: #c1121f;
-  --muted: #8a8070;
-  --text: #1a1a1a;
-  --mono: 'DM Mono', monospace;
-  --sans: 'Syne', sans-serif;
+  --bg: #f5f3ee; --surface: #ffffff; --border: #e0dbd0;
+  --accent: #1a1a2e; --highlight: #e8c547; --highlight2: #d4a017;
+  --muted: #8a8070; --text: #1a1a1a;
+  --mono: 'DM Mono', monospace; --sans: 'Syne', sans-serif;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
-
-nav {
-  background: var(--accent); color: white;
-  padding: 0 2rem; display: flex; align-items: center;
-  justify-content: space-between; height: 56px;
-  position: sticky; top: 0; z-index: 100;
-}
+nav { background: var(--accent); color: white; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
 .nav-brand { font-size: 1rem; font-weight: 700; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.75rem; }
-.nav-badge { background: var(--highlight); color: var(--accent); font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 3px; letter-spacing: 0.1em; }
-.nav-tabs { display: flex; gap: 0; height: 100%; }
-.nav-tab { padding: 0 1.25rem; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.05em; cursor: pointer; display: flex; align-items: center; border-bottom: 3px solid transparent; color: rgba(255,255,255,0.6); transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; font-family: var(--sans); }
+.nav-badge { background: var(--highlight); color: var(--accent); font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 3px; }
+.nav-tabs { display: flex; height: 100%; }
+.nav-tab { padding: 0 1.25rem; font-size: 0.8rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; border-bottom: 3px solid transparent; color: rgba(255,255,255,0.6); transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; font-family: var(--sans); }
 .nav-tab:hover { color: white; }
 .nav-tab.active { color: var(--highlight); border-bottom-color: var(--highlight); }
-
 .view { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
 .view.active { display: block; }
 
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; align-items: center; justify-content: center; }
+.modal-overlay.active { display: flex; }
+.modal { background: var(--accent); border-radius: 16px; padding: 2rem; max-width: 420px; width: 90%; text-align: center; color: white; }
+.modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--highlight); }
+.modal-sub { font-size: 0.75rem; color: rgba(255,255,255,0.6); font-family: var(--mono); margin-bottom: 1.5rem; line-height: 1.7; }
+.modal-captcha { display: flex; justify-content: center; margin-bottom: 1.25rem; }
+.modal-status { font-family: var(--mono); font-size: 0.75rem; color: rgba(255,255,255,0.5); min-height: 1.5em; margin-bottom: 1rem; }
+.modal-status.ok { color: #52b788; }
+.modal-status.err { color: #e63946; }
+.modal-status.loading { color: var(--highlight); }
+.btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.6rem 1.25rem; color: rgba(255,255,255,0.6); font-family: var(--sans); font-size: 0.78rem; cursor: pointer; }
+
 /* ELSE PANEL */
-.else-panel {
-  background: var(--accent); color: white;
-  border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
-}
-.else-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.else-panel { background: var(--accent); color: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
 .else-label { font-size: 0.65rem; letter-spacing: 0.15em; color: var(--highlight); margin-bottom: 1rem; font-family: var(--mono); }
 .else-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
 .else-fields-extra { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
@@ -54,14 +47,13 @@ nav {
 .else-field label { display: block; font-size: 0.6rem; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 0.4rem; font-family: var(--mono); }
 .else-field input { width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 0.6rem 0.8rem; color: var(--highlight); font-family: var(--mono); font-size: 1rem; font-weight: 500; outline: none; transition: border-color 0.2s; }
 .else-field input:focus { border-color: var(--highlight); }
-.else-actions { display: flex; flex-direction: column; gap: 0.75rem; align-items: flex-end; min-width: 160px; }
-.btn-else { background: var(--highlight); color: var(--accent); border: none; border-radius: 8px; padding: 0.75rem 1.25rem; font-family: var(--sans); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; cursor: pointer; white-space: nowrap; transition: background 0.15s; width: 100%; }
+.else-field input[readonly] { opacity: 0.6; cursor: not-allowed; }
+.else-bottom { display: flex; align-items: center; gap: 1rem; margin-top: 1.25rem; flex-wrap: wrap; }
+.btn-else { background: var(--highlight); color: var(--accent); border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-family: var(--sans); font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
 .btn-else:hover { background: var(--highlight2); }
-.btn-else:disabled { opacity: 0.5; cursor: not-allowed; }
-.else-status { font-family: var(--mono); font-size: 0.68rem; color: rgba(255,255,255,0.4); text-align: center; min-height: 1.2em; }
+.else-status { font-family: var(--mono); font-size: 0.68rem; color: rgba(255,255,255,0.4); }
 .else-status.ok { color: #52b788; }
 .else-status.err { color: #e63946; }
-.else-status.loading { color: var(--highlight); }
 
 /* MES BAR */
 .mes-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
@@ -114,9 +106,8 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 .ticket-total-val { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
 .ticket-pie { margin-top: 0.5rem; font-size: 0.62rem; color: var(--muted); text-align: center; }
 
-/* PRINT */
 @media print {
-  nav, .else-panel, .mes-bar button, .btn-print, .tickets-header button { display: none !important; }
+  nav, .else-panel, .mes-bar button, .btn-print, .modal-overlay { display: none !important; }
   body { background: white; }
   .view { padding: 0; display: block !important; }
   #view-calculo { display: none !important; }
@@ -127,6 +118,27 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 </head>
 <body>
 
+<!-- MODAL CON CAPTCHA VISIBLE -->
+<div class="modal-overlay" id="modal-captcha">
+  <div class="modal">
+    <div class="modal-title">⚡ Verificación ELSE</div>
+    <div class="modal-sub">
+      Resuelve el CAPTCHA una vez al mes.<br>
+      El resto es completamente automático.
+    </div>
+    <div class="modal-captcha">
+      <div class="g-recaptcha"
+        data-sitekey="6LcXgKUZAAAAAHjJw9jukq6t4baaJ6LFvoNRjVWv"
+        data-callback="onCaptchaResuelto"
+        data-expired-callback="onCaptchaExpirado"
+        data-theme="dark">
+      </div>
+    </div>
+    <div class="modal-status" id="modal-status">Resuelve el CAPTCHA para continuar...</div>
+    <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+  </div>
+</div>
+
 <nav>
   <div class="nav-brand">⚡ GESTOR DE LUZ <span class="nav-badge">INMUEBLE R-8</span></div>
   <div class="nav-tabs">
@@ -135,60 +147,52 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
   </div>
 </nav>
 
-<!-- CÁLCULO -->
 <div class="view active" id="view-calculo">
 
-  <!-- Panel ELSE -->
   <div class="else-panel">
-    <div class="else-top">
-      <div style="flex:1">
-        <div class="else-label">▸ DATOS AUTOMÁTICOS DEL RECIBO ELSE — SUMINISTRO 0010512230</div>
-        <div class="else-fields">
-          <div class="else-field">
-            <label>ALUMBRADO PÚBLICO (S/)</label>
-            <input type="number" id="e-alumbrado" step="0.01" value="18.17" oninput="recalcular()">
-          </div>
-          <div class="else-field">
-            <label>CARGO FIJO AJUSTADO (S/)</label>
-            <input type="number" id="e-cargo" step="0.01" value="3.74" oninput="recalcular()">
-          </div>
-          <div class="else-field">
-            <label>ELECTRIFICACIÓN RURAL (S/)</label>
-            <input type="number" id="e-electrif" step="0.01" value="2.12" oninput="recalcular()">
-          </div>
-        </div>
-        <div class="else-fields-extra">
-          <div class="else-field">
-            <label>PRECIO UNITARIO (S//kWh)</label>
-            <input type="number" id="e-precio" step="0.0001" value="0.7285" oninput="recalcular()">
-          </div>
-          <div class="else-field">
-            <label>AFECTO RECARGO FOSE (S/)</label>
-            <input type="number" id="e-fose" step="0.01" value="3.66" oninput="recalcular()">
-          </div>
-          <div class="else-field">
-            <label>TOTAL A PAGAR ELSE (S/)</label>
-            <input type="number" id="e-total" step="0.01" value="231.70" readonly style="opacity:0.6;cursor:not-allowed">
-          </div>
-        </div>
+    <div class="else-label">▸ DATOS DEL RECIBO ELSE — SUMINISTRO 0010512230</div>
+    <div class="else-fields">
+      <div class="else-field">
+        <label>ALUMBRADO PÚBLICO (S/)</label>
+        <input type="number" id="e-alumbrado" step="0.01" value="18.17" oninput="recalcular()">
       </div>
-      <div class="else-actions">
-        <button class="btn-else" id="btn-obtener" onclick="obtenerDatos()">⟳ OBTENER DE ELSE</button>
-        <div class="else-status" id="else-status">Sin conectar</div>
+      <div class="else-field">
+        <label>CARGO FIJO AJUSTADO (S/)</label>
+        <input type="number" id="e-cargo" step="0.01" value="3.74" oninput="recalcular()">
       </div>
+      <div class="else-field">
+        <label>ELECTRIFICACIÓN RURAL (S/)</label>
+        <input type="number" id="e-electrif" step="0.01" value="2.12" oninput="recalcular()">
+      </div>
+    </div>
+    <div class="else-fields-extra">
+      <div class="else-field">
+        <label>PRECIO UNITARIO (S//kWh)</label>
+        <input type="number" id="e-precio" step="0.0001" value="0.7285" oninput="recalcular()">
+      </div>
+      <div class="else-field">
+        <label>AFECTO RECARGO FOSE (S/)</label>
+        <input type="number" id="e-fose" step="0.01" value="3.66" oninput="recalcular()">
+      </div>
+      <div class="else-field">
+        <label>TOTAL A PAGAR ELSE (S/)</label>
+        <input type="number" id="e-total" step="0.01" value="231.70" readonly>
+      </div>
+    </div>
+    <div class="else-bottom">
+      <button class="btn-else" onclick="abrirModal()">⟳ OBTENER DE ELSE</button>
+      <div class="else-status" id="else-status">Haz clic para cargar datos del mes actual</div>
     </div>
   </div>
 
-  <!-- Mes -->
   <div class="mes-bar">
     <div>
       <div class="mes-titulo" id="mes-titulo">Mes Abril 2026</div>
-      <div class="mes-sub" id="mes-sub">Cargando datos...</div>
+      <div class="mes-sub" id="mes-sub">Cargando...</div>
     </div>
     <button class="btn-nuevo-mes" onclick="nuevoMes()">↻ NUEVO MES</button>
   </div>
 
-  <!-- Tabla -->
   <div class="tabla-wrap">
     <table class="main">
       <thead>
@@ -212,7 +216,6 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
     </table>
   </div>
 
-  <!-- Resumen -->
   <div class="resumen-grid">
     <div class="resumen-card">
       <div class="resumen-label">TOTAL RECAUDADO</div>
@@ -233,7 +236,6 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
   </div>
 </div>
 
-<!-- TICKETS -->
 <div class="view" id="view-tickets">
   <div class="tickets-header">
     <div>
@@ -246,39 +248,31 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 </div>
 
 <script>
-const SUMINISTRO = '0010512230';
 const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-// Estado inicial — cargado del Excel
 let state = {
   mes: 'Abril 2026',
   inquilinos: [
-    { id:1,  piso:'2',  nombre:' ',            ant:1834.34, nuevo:1834.34, suspendido:false },
-    { id:2,  piso:'3',  nombre:'Jhon Bellido',  ant:1362.97, nuevo:1367.75, suspendido:false },
-    { id:3,  piso:'3',  nombre:'Janet Condory', ant:1452.19, nuevo:1472.80, suspendido:false },
-    { id:4,  piso:'3',  nombre:'Adam Escobar',  ant:1099.99, nuevo:1141.50, suspendido:false },
-    { id:5,  piso:'4',  nombre:'Shamira',       ant:2123.68, nuevo:2127.69, suspendido:false },
-    { id:6,  piso:'4',  nombre:'Sofia Ramos',   ant:1200.65, nuevo:1205.37, suspendido:false },
-    { id:7,  piso:'4',  nombre:'Jhon Colque',   ant:1717.80, nuevo:1761.70, suspendido:false },
-    { id:8,  piso:'5',  nombre:'Verónica Apaza',ant:2109.21, nuevo:2122.33, suspendido:false },
-    { id:9,  piso:'5',  nombre:'Rina Quispe',   ant:2189.70, nuevo:2217.38, suspendido:false },
-    { id:10, piso:'5',  nombre:'Emerson Quispe',ant:660.90,  nuevo:672.90,  suspendido:false },
-    { id:11, piso:'3C', nombre:' ',             ant:117.70,  nuevo:117.70,  suspendido:false },
-    { id:12, piso:'4',  nombre:'suspendido',    ant:0,       nuevo:0,       suspendido:true  },
+    { id:1,  piso:'2',  nombre:' ',             ant:1834.34, nuevo:1834.34, suspendido:false },
+    { id:2,  piso:'3',  nombre:'Jhon Bellido',   ant:1362.97, nuevo:1367.75, suspendido:false },
+    { id:3,  piso:'3',  nombre:'Janet Condory',  ant:1452.19, nuevo:1472.80, suspendido:false },
+    { id:4,  piso:'3',  nombre:'Adam Escobar',   ant:1099.99, nuevo:1141.50, suspendido:false },
+    { id:5,  piso:'4',  nombre:'Shamira',        ant:2123.68, nuevo:2127.69, suspendido:false },
+    { id:6,  piso:'4',  nombre:'Sofia Ramos',    ant:1200.65, nuevo:1205.37, suspendido:false },
+    { id:7,  piso:'4',  nombre:'Jhon Colque',    ant:1717.80, nuevo:1761.70, suspendido:false },
+    { id:8,  piso:'5',  nombre:'Verónica Apaza', ant:2109.21, nuevo:2122.33, suspendido:false },
+    { id:9,  piso:'5',  nombre:'Rina Quispe',    ant:2189.70, nuevo:2217.38, suspendido:false },
+    { id:10, piso:'5',  nombre:'Emerson Quispe', ant:660.90,  nuevo:672.90,  suspendido:false },
+    { id:11, piso:'3C', nombre:' ',              ant:117.70,  nuevo:117.70,  suspendido:false },
+    { id:12, piso:'4',  nombre:'suspendido',     ant:0,       nuevo:0,       suspendido:true  },
   ]
 };
 
-// Guardar/cargar en localStorage
-function guardar() {
-  localStorage.setItem('luz_state', JSON.stringify(state));
-}
-
+function guardar() { localStorage.setItem('luz_state', JSON.stringify(state)); }
 function cargar() {
-  const s = localStorage.getItem('luz_state');
-  if (s) { try { state = JSON.parse(s); } catch(e) {} }
+  try { const s = localStorage.getItem('luz_state'); if (s) state = JSON.parse(s); } catch(e) {}
 }
 
-// Campos ELSE
 function getCampos() {
   return {
     alumbrado: parseFloat(document.getElementById('e-alumbrado').value) || 0,
@@ -286,25 +280,22 @@ function getCampos() {
     electrif:  parseFloat(document.getElementById('e-electrif').value)  || 0,
     precio:    parseFloat(document.getElementById('e-precio').value)    || 0,
     fose:      parseFloat(document.getElementById('e-fose').value)      || 0,
-    total:     parseFloat(document.getElementById('e-total').value)     || 0,
   };
 }
 
-function getRubrosValor(campos) {
+function getRubros(campos) {
   const activos = state.inquilinos.filter(i => !i.suspendido && i.nuevo > 0).length;
-  if (!activos) return 0;
-  return (campos.alumbrado + campos.electrif + campos.fose) / activos;
+  return activos ? (campos.alumbrado + campos.electrif + campos.fose) / activos : 0;
 }
 
 function calcular(inq, campos) {
   if (inq.suspendido || inq.nuevo === 0) return { resta:0, xPrecio:0, rubros:0, suma:0, igv:0, total:0 };
-  const rubros = getRubrosValor(campos);
+  const rubros = getRubros(campos);
   const resta = Math.max(0, inq.nuevo - inq.ant);
   const xPrecio = resta * campos.precio;
   const suma = xPrecio + rubros;
   const igv = suma * 0.18;
-  const total = suma + igv;
-  return { resta, xPrecio, rubros, suma, igv, total };
+  return { resta, xPrecio, rubros, suma, igv, total: suma + igv };
 }
 
 function renderTabla() {
@@ -316,16 +307,13 @@ function renderTabla() {
   state.inquilinos.forEach((inq, i) => {
     const c = calcular(inq, campos);
     if (!inq.suspendido && inq.nuevo > 0) { totalGen += c.total; activos++; }
-
     const tr = document.createElement('tr');
     if (inq.suspendido) tr.classList.add('suspendido');
     tr.innerHTML = `
-      <td>
-        <input type="text" value="${inq.nombre}"
-          onchange="state.inquilinos[${i}].nombre=this.value;guardar();renderTickets()"
-          style="background:transparent;border:none;font-family:var(--sans);font-size:0.82rem;outline:none;width:120px"
-          ${inq.suspendido?'disabled':''}>
-      </td>
+      <td><input type="text" value="${inq.nombre}"
+        onchange="state.inquilinos[${i}].nombre=this.value;guardar();renderTickets()"
+        style="background:transparent;border:none;font-family:var(--sans);font-size:0.82rem;outline:none;width:130px"
+        ${inq.suspendido?'disabled':''}></td>
       <td>${inq.piso}</td>
       <td><input type="number" value="${inq.ant}" step="0.01"
         onchange="state.inquilinos[${i}].ant=parseFloat(this.value)||0;guardar();recalcular()"
@@ -343,16 +331,14 @@ function renderTabla() {
     tbody.appendChild(tr);
   });
 
-  const rubros = getRubrosValor(campos);
+  const rubros = getRubros(campos);
   const reciboTotal = campos.alumbrado + campos.cargo + campos.electrif + campos.fose;
-  document.getElementById('r-total').textContent = 'S/ ' + totalGen.toFixed(2);
-  document.getElementById('r-rubros').textContent = 'S/ ' + rubros.toFixed(3);
-  document.getElementById('r-recibo').textContent = 'S/ ' + reciboTotal.toFixed(2);
+  document.getElementById('r-total').textContent   = 'S/ ' + totalGen.toFixed(2);
+  document.getElementById('r-rubros').textContent  = 'S/ ' + rubros.toFixed(3);
+  document.getElementById('r-recibo').textContent  = 'S/ ' + reciboTotal.toFixed(2);
   document.getElementById('r-activos').textContent = activos;
-  document.getElementById('mes-sub').textContent =
-    `Precio unitario: S/ ${campos.precio} · 4 rubros: S/ ${rubros.toFixed(3)} · Recibo ELSE: S/ ${reciboTotal.toFixed(2)}`;
+  document.getElementById('mes-sub').textContent   = `Precio unitario: S/ ${campos.precio} · 4 rubros: S/ ${rubros.toFixed(3)} · Recibo ELSE: S/ ${reciboTotal.toFixed(2)}`;
   document.getElementById('mes-titulo').textContent = 'Mes ' + state.mes;
-
   renderTickets();
 }
 
@@ -363,7 +349,6 @@ function renderTickets() {
   const grid = document.getElementById('tickets-grid');
   grid.innerHTML = '';
   document.getElementById('t-mes').textContent = 'Tickets — ' + state.mes;
-
   state.inquilinos.forEach(inq => {
     const c = calcular(inq, campos);
     const nombre = (inq.nombre || '').trim() || '(sin nombre)';
@@ -391,54 +376,88 @@ function renderTickets() {
   });
 }
 
-// NUEVO MES
 function nuevoMes() {
   const ahora = new Date();
-  const m = ahora.getMonth() + 1;
-  const y = ahora.getFullYear();
-  const nombre = MESES[m] + ' ' + y;
-  if (!confirm(`¿Activar nuevo mes?\n\nLecturas actuales → anteriores\nNuevo mes quedará igual para que actualices.\n\nMes: ${nombre}`)) return;
+  const nombre = MESES[ahora.getMonth() + 1] + ' ' + ahora.getFullYear();
+  if (!confirm(`¿Activar nuevo mes?\n\nLecturas actuales → anteriores\n\nMes: ${nombre}`)) return;
   state.mes = nombre;
   state.inquilinos = state.inquilinos.map(i => ({ ...i, ant: i.nuevo }));
   guardar();
   renderTabla();
 }
 
-// OBTENER DATOS DE ELSE via n8n webhook
-async function obtenerDatos() {
-  const btn = document.getElementById('btn-obtener');
-  const status = document.getElementById('else-status');
+// ── CAPTCHA MODAL ──
+function abrirModal() {
+  document.getElementById('modal-captcha').classList.add('active');
+  document.getElementById('modal-status').className = 'modal-status';
+  document.getElementById('modal-status').textContent = 'Resuelve el CAPTCHA para continuar...';
+}
 
-  btn.disabled = true;
-  status.className = 'else-status loading';
-  status.textContent = '⟳ Conectando con servidor... (puede tardar ~1 min)';
+function cerrarModal() {
+  document.getElementById('modal-captcha').classList.remove('active');
+  try { grecaptcha.reset(); } catch(e) {}
+}
+
+function onCaptchaExpirado() {
+  document.getElementById('modal-status').className = 'modal-status err';
+  document.getElementById('modal-status').textContent = 'CAPTCHA expirado, intenta de nuevo';
+}
+
+async function onCaptchaResuelto(token) {
+  const status = document.getElementById('modal-status');
+  status.className = 'modal-status loading';
 
   try {
-    const resp = await fetch('https://schmalzier-nonsuctorial-malissa.ngrok-free.dev/webhook/obtener-else', {
-      signal: AbortSignal.timeout(120000)
+    status.textContent = '⟳ Iniciando sesión en ELSE...';
+    const sesResp = await fetch('/api/else?action=sesion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recaptchaToken: token, suministro: '0010512230' })
     });
+    const ses = await sesResp.json();
+    if (!ses.exito || !ses.datos) throw new Error(ses.mensaje || 'Sin token de sesión');
 
-    if (!resp.ok) throw new Error('Error del servidor: ' + resp.status);
+    status.textContent = '⟳ Descargando recibo PDF...';
+    const pdfResp = await fetch('/api/else?action=pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: ses.datos })
+    });
+    const pdfData = await pdfResp.json();
+    if (!pdfData.pdf) throw new Error('No se pudo descargar el PDF');
 
-    const data = await resp.json();
-    if (!data.ok) throw new Error('No se pudieron extraer los datos del PDF');
+    status.textContent = '⟳ Extrayendo datos con IA (Gemini)...';
+    const extResp = await fetch('/api/else?action=extraer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdfBase64: pdfData.pdf })
+    });
+    const extData = await extResp.json();
+    if (!extData.ok || !extData.valores) throw new Error('No se pudieron extraer los valores del PDF');
 
-    document.getElementById('e-alumbrado').value = data.alumbrado_publico   || 0;
-    document.getElementById('e-cargo').value     = data.cargo_fijo_ajustado || 0;
-    document.getElementById('e-electrif').value  = data.electrificacion_rural || 0;
-    document.getElementById('e-precio').value    = data.precio_unitario     || 0;
-    document.getElementById('e-fose').value      = data.afecto_recargo_fose || 0;
-    document.getElementById('e-total').value     = data.total_a_pagar       || 0;
-
-    status.className = 'else-status ok';
-    status.textContent = `✓ Datos actualizados · Total ELSE: S/ ${data.total_a_pagar}`;
+    const v = extData.valores;
+    document.getElementById('e-alumbrado').value = v.alumbrado_publico     || 0;
+    document.getElementById('e-cargo').value     = v.cargo_fijo_ajustado   || 0;
+    document.getElementById('e-electrif').value  = v.electrificacion_rural || 0;
+    document.getElementById('e-precio').value    = v.precio_unitario       || 0;
+    document.getElementById('e-fose').value      = v.afecto_recargo_fose   || 0;
+    document.getElementById('e-total').value     = v.total_a_pagar         || 0;
     recalcular();
 
+    status.className = 'modal-status ok';
+    status.textContent = `✓ Datos obtenidos · Total ELSE: S/ ${v.total_a_pagar}`;
+
+    setTimeout(() => {
+      cerrarModal();
+      const es = document.getElementById('else-status');
+      es.className = 'else-status ok';
+      es.textContent = `✓ Actualizado · Total ELSE: S/ ${v.total_a_pagar}`;
+    }, 2000);
+
   } catch(e) {
-    status.className = 'else-status err';
-    status.textContent = '✗ ' + (e.name === 'TimeoutError' ? 'Timeout — el servidor tardó más de 2 minutos' : e.message);
-  } finally {
-    btn.disabled = false;
+    status.className = 'modal-status err';
+    status.textContent = '✗ ' + e.message;
+    try { grecaptcha.reset(); } catch(err) {}
   }
 }
 
@@ -450,7 +469,6 @@ function showView(name, btn) {
   if (name === 'tickets') renderTickets();
 }
 
-// INIT
 cargar();
 renderTabla();
 </script>

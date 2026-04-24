@@ -406,75 +406,39 @@ function nuevoMes() {
   renderTabla();
 }
 
-// OBTENER DATOS DE ELSE
+// OBTENER DATOS DE ELSE via n8n webhook
 async function obtenerDatos() {
   const btn = document.getElementById('btn-obtener');
   const status = document.getElementById('else-status');
 
   btn.disabled = true;
   status.className = 'else-status loading';
-  status.textContent = '⟳ Verificando reCAPTCHA...';
+  status.textContent = '⟳ Conectando con servidor... (puede tardar ~1 min)';
 
   try {
-    // 1. Obtener token reCAPTCHA
-    const rcToken = await new Promise((resolve, reject) => {
-      grecaptcha.ready(async () => {
-        try { resolve(await grecaptcha.execute(SITEKEY, { action: 'submit' })); }
-        catch(e) { reject(e); }
-      });
-      setTimeout(() => reject(new Error('Timeout reCAPTCHA')), 15000);
+    const resp = await fetch('https://schmalzier-nonsuctorial-malissa.ngrok-free.dev/webhook/obtener-else', {
+      signal: AbortSignal.timeout(120000)
     });
 
-    status.textContent = '⟳ Consultando ELSE...';
+    if (!resp.ok) throw new Error('Error del servidor: ' + resp.status);
 
-    // 2. Sesion via proxy
-    const sesResp = await fetch('/api/else?action=sesion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recaptchaToken: rcToken, suministro: SUMINISTRO })
-    });
-    const ses = await sesResp.json();
-    if (!ses.exito || !ses.datos) throw new Error(ses.mensaje || 'Sin token de sesión');
+    const data = await resp.json();
+    if (!data.ok) throw new Error('No se pudieron extraer los datos del PDF');
 
-    status.textContent = '⟳ Descargando PDF...';
-
-    // 3. Descargar PDF via proxy
-    const pdfResp = await fetch('/api/else?action=pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: ses.datos })
-    });
-    const pdfData = await pdfResp.json();
-    if (!pdfData.pdf) throw new Error('No se pudo descargar el PDF');
-
-    status.textContent = '⟳ Extrayendo datos con IA...';
-
-    // 4. Claude extrae los 6 valores del PDF
-    const extResp = await fetch('/api/else?action=extraer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pdfBase64: pdfData.pdf })
-    });
-    const extData = await extResp.json();
-    if (!extData.ok || !extData.valores) throw new Error('No se pudieron extraer los valores');
-
-    const v = extData.valores;
-
-    // 5. Llenar los campos
-    document.getElementById('e-alumbrado').value = v.alumbrado_publico || 0;
-    document.getElementById('e-cargo').value     = v.cargo_fijo_ajustado || 0;
-    document.getElementById('e-electrif').value  = v.electrificacion_rural || 0;
-    document.getElementById('e-precio').value    = v.precio_unitario || 0;
-    document.getElementById('e-fose').value      = v.afecto_recargo_fose || 0;
-    document.getElementById('e-total').value     = v.total_a_pagar || 0;
+    document.getElementById('e-alumbrado').value = data.alumbrado_publico   || 0;
+    document.getElementById('e-cargo').value     = data.cargo_fijo_ajustado || 0;
+    document.getElementById('e-electrif').value  = data.electrificacion_rural || 0;
+    document.getElementById('e-precio').value    = data.precio_unitario     || 0;
+    document.getElementById('e-fose').value      = data.afecto_recargo_fose || 0;
+    document.getElementById('e-total').value     = data.total_a_pagar       || 0;
 
     status.className = 'else-status ok';
-    status.textContent = `✓ Datos actualizados · Total ELSE: S/ ${v.total_a_pagar}`;
+    status.textContent = `✓ Datos actualizados · Total ELSE: S/ ${data.total_a_pagar}`;
     recalcular();
 
   } catch(e) {
     status.className = 'else-status err';
-    status.textContent = '✗ ' + e.message;
+    status.textContent = '✗ ' + (e.name === 'TimeoutError' ? 'Timeout — el servidor tardó más de 2 minutos' : e.message);
   } finally {
     btn.disabled = false;
   }

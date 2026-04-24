@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/else.js": {
+      "maxDuration": 30
+    }
+  }
+}

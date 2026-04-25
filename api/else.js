@@ -7,10 +7,26 @@ export default async function handler(req, res) {
   const { action } = req.query;
 
   try {
-    // 1. SESION — obtener token con reCAPTCHA
+
+    // ── 1. SESION ──────────────────────────────────────────────
     if (action === 'sesion') {
       const { recaptchaToken, suministro } = req.body;
-      const resp = await fetch('https://appsrv.else.com.pe/wApiPagoVisa/SesionELSE/', {
+
+      // Verificar el token con nuestra secret key
+      const verifyResp = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `secret=${process.env.RECAPTCHA_SECRET}&response=${recaptchaToken}`
+      });
+      const verify = await verifyResp.json();
+      if (!verify.success) {
+        return res.status(400).json({ exito: false, mensaje: 'CAPTCHA inválido' });
+      }
+
+      // Llamar a ELSE con un token de reCAPTCHA de ELSE
+      // Necesitamos obtener un token válido para ELSE desde el servidor
+      // Usamos el token verificado para hacer la petición directa
+      const sesResp = await fetch('https://appsrv.else.com.pe/wApiPagoVisa/SesionELSE/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -21,16 +37,18 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           buscarPor: 'sum',
           nroDocumento: suministro || '0010512230',
-          recaptchaToken
+          recaptchaToken: recaptchaToken
         })
       });
-      const data = await resp.json();
+
+      const data = await sesResp.json();
       return res.status(200).json(data);
     }
 
-    // 2. PDF — descargar con el token de sesion
+    // ── 2. PDF ─────────────────────────────────────────────────
     if (action === 'pdf') {
       const { token } = req.body;
+
       const resp = await fetch('https://appsrv.else.com.pe/pdf', {
         headers: {
           'Authorization': 'ElsePagoVisa ' + token,
@@ -39,16 +57,20 @@ export default async function handler(req, res) {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
       });
+
       const buffer = await resp.arrayBuffer();
       const base64 = Buffer.from(buffer).toString('base64');
       return res.status(200).json({ pdf: base64, size: buffer.byteLength });
     }
 
-    // 3. EXTRAER — Gemini lee el PDF y extrae los 6 valores
+    // ── 3. EXTRAER — Gemini lee el PDF ─────────────────────────
     if (action === 'extraer') {
       const { pdfBase64 } = req.body;
       const GEMINI_KEY = process.env.GEMINI_API_KEY;
-      if (!GEMINI_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY no configurada en Vercel' });
+
+      if (!GEMINI_KEY) {
+        return res.status(500).json({ error: 'GEMINI_API_KEY no configurada en Vercel' });
+      }
 
       const geminiResp = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,

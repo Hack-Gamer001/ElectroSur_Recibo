@@ -8,24 +8,10 @@ export default async function handler(req, res) {
 
   try {
 
-    // ── 1. SESION ──────────────────────────────────────────────
+    // ── SESION: recibe token de ELSE directamente ──────────────
     if (action === 'sesion') {
       const { recaptchaToken, suministro } = req.body;
 
-      // Verificar el token con nuestra secret key
-      const verifyResp = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `secret=${process.env.RECAPTCHA_SECRET}&response=${recaptchaToken}`
-      });
-      const verify = await verifyResp.json();
-      if (!verify.success) {
-        return res.status(400).json({ exito: false, mensaje: 'CAPTCHA inválido' });
-      }
-
-      // Llamar a ELSE con un token de reCAPTCHA de ELSE
-      // Necesitamos obtener un token válido para ELSE desde el servidor
-      // Usamos el token verificado para hacer la petición directa
       const sesResp = await fetch('https://appsrv.else.com.pe/wApiPagoVisa/SesionELSE/', {
         method: 'POST',
         headers: {
@@ -37,7 +23,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           buscarPor: 'sum',
           nroDocumento: suministro || '0010512230',
-          recaptchaToken: recaptchaToken
+          recaptchaToken
         })
       });
 
@@ -45,7 +31,7 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     }
 
-    // ── 2. PDF ─────────────────────────────────────────────────
+    // ── PDF: descargar con token de sesión ─────────────────────
     if (action === 'pdf') {
       const { token } = req.body;
 
@@ -63,14 +49,12 @@ export default async function handler(req, res) {
       return res.status(200).json({ pdf: base64, size: buffer.byteLength });
     }
 
-    // ── 3. EXTRAER — Gemini lee el PDF ─────────────────────────
+    // ── EXTRAER: Gemini lee el PDF ─────────────────────────────
     if (action === 'extraer') {
       const { pdfBase64 } = req.body;
       const GEMINI_KEY = process.env.GEMINI_API_KEY;
 
-      if (!GEMINI_KEY) {
-        return res.status(500).json({ error: 'GEMINI_API_KEY no configurada en Vercel' });
-      }
+      if (!GEMINI_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY no configurada' });
 
       const geminiResp = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
@@ -80,16 +64,8 @@ export default async function handler(req, res) {
           body: JSON.stringify({
             contents: [{
               parts: [
-                {
-                  inline_data: {
-                    mime_type: 'application/pdf',
-                    data: pdfBase64
-                  }
-                },
-                {
-                  text: `Del recibo de luz de Electro Sur Este extrae EXACTAMENTE estos 6 valores numericos. Responde SOLO con JSON puro sin markdown ni texto adicional:
-{"alumbrado_publico": numero, "cargo_fijo_ajustado": numero, "electrificacion_rural": numero, "precio_unitario": numero, "afecto_recargo_fose": numero, "total_a_pagar": numero}`
-                }
+                { inline_data: { mime_type: 'application/pdf', data: pdfBase64 } },
+                { text: `Del recibo de luz de Electro Sur Este extrae EXACTAMENTE estos 6 valores numericos. Responde SOLO con JSON puro sin markdown:\n{"alumbrado_publico": numero, "cargo_fijo_ajustado": numero, "electrificacion_rural": numero, "precio_unitario": numero, "afecto_recargo_fose": numero, "total_a_pagar": numero}` }
               ]
             }],
             generationConfig: { temperature: 0 }
@@ -101,15 +77,14 @@ export default async function handler(req, res) {
       const texto = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
 
       try {
-        const limpio = texto.replace(/```json|```/g, '').trim();
-        const valores = JSON.parse(limpio);
+        const valores = JSON.parse(texto.replace(/```json|```/g, '').trim());
         return res.status(200).json({ ok: true, valores });
       } catch(e) {
-        return res.status(200).json({ ok: false, raw: texto, error: e.message });
+        return res.status(200).json({ ok: false, raw: texto });
       }
     }
 
-    return res.status(400).json({ error: 'Acción no válida: ' + action });
+    return res.status(400).json({ error: 'Acción no válida' });
 
   } catch(e) {
     return res.status(500).json({ error: e.message });

@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestor de Luz — Inmueble R-8</title>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
 :root {
@@ -25,19 +24,6 @@ nav { background: var(--accent); color: white; padding: 0 2rem; display: flex; a
 .view { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
 .view.active { display: block; }
 
-/* MODAL */
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; align-items: center; justify-content: center; }
-.modal-overlay.active { display: flex; }
-.modal { background: var(--accent); border-radius: 16px; padding: 2rem; max-width: 420px; width: 90%; text-align: center; color: white; }
-.modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--highlight); }
-.modal-sub { font-size: 0.75rem; color: rgba(255,255,255,0.6); font-family: var(--mono); margin-bottom: 1.5rem; line-height: 1.7; }
-.modal-captcha { display: flex; justify-content: center; margin-bottom: 1.25rem; }
-.modal-status { font-family: var(--mono); font-size: 0.75rem; color: rgba(255,255,255,0.5); min-height: 1.5em; margin-bottom: 1rem; }
-.modal-status.ok { color: #52b788; }
-.modal-status.err { color: #e63946; }
-.modal-status.loading { color: var(--highlight); }
-.btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.6rem 1.25rem; color: rgba(255,255,255,0.6); font-family: var(--sans); font-size: 0.78rem; cursor: pointer; }
-
 /* ELSE PANEL */
 .else-panel { background: var(--accent); color: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
 .else-label { font-size: 0.65rem; letter-spacing: 0.15em; color: var(--highlight); margin-bottom: 1rem; font-family: var(--mono); }
@@ -49,11 +35,29 @@ nav { background: var(--accent); color: white; padding: 0 2rem; display: flex; a
 .else-field input:focus { border-color: var(--highlight); }
 .else-field input[readonly] { opacity: 0.6; cursor: not-allowed; }
 .else-bottom { display: flex; align-items: center; gap: 1rem; margin-top: 1.25rem; flex-wrap: wrap; }
-.btn-else { background: var(--highlight); color: var(--accent); border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-family: var(--sans); font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+.btn-else { background: var(--highlight); color: var(--accent); border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-family: var(--sans); font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
 .btn-else:hover { background: var(--highlight2); }
-.else-status { font-family: var(--mono); font-size: 0.68rem; color: rgba(255,255,255,0.4); }
+.btn-else:disabled { opacity: 0.5; cursor: not-allowed; }
+.else-status { font-family: var(--mono); font-size: 0.68rem; color: rgba(255,255,255,0.5); }
 .else-status.ok { color: #52b788; }
 .else-status.err { color: #e63946; }
+.else-status.loading { color: var(--highlight); }
+
+/* INSTRUCCION POPUP */
+.popup-instruccion {
+  background: rgba(232,197,71,0.1);
+  border: 1px solid rgba(232,197,71,0.3);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.6;
+  display: none;
+}
+.popup-instruccion.visible { display: block; }
+.popup-instruccion strong { color: var(--highlight); }
 
 /* MES BAR */
 .mes-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
@@ -68,7 +72,7 @@ table.main { width: 100%; border-collapse: collapse; background: var(--surface);
 table.main thead tr { background: var(--accent); color: white; }
 table.main thead th { padding: 0.75rem 0.85rem; text-align: center; font-size: 0.65rem; letter-spacing: 0.08em; font-weight: 600; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.08); }
 table.main thead th:first-child { text-align: left; }
-table.main tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+table.main tbody tr { border-bottom: 1px solid var(--border); }
 table.main tbody tr:hover { background: #faf9f5; }
 table.main tbody tr:last-child { border-bottom: none; }
 table.main td { padding: 0.6rem 0.85rem; text-align: center; font-family: var(--mono); font-size: 0.8rem; border-right: 1px solid var(--border); }
@@ -107,7 +111,7 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 .ticket-pie { margin-top: 0.5rem; font-size: 0.62rem; color: var(--muted); text-align: center; }
 
 @media print {
-  nav, .else-panel, .mes-bar button, .btn-print, .modal-overlay { display: none !important; }
+  nav, .else-panel, .mes-bar button, .btn-print { display: none !important; }
   body { background: white; }
   .view { padding: 0; display: block !important; }
   #view-calculo { display: none !important; }
@@ -117,27 +121,6 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 </style>
 </head>
 <body>
-
-<!-- MODAL CON CAPTCHA VISIBLE -->
-<div class="modal-overlay" id="modal-captcha">
-  <div class="modal">
-    <div class="modal-title">⚡ Verificación ELSE</div>
-    <div class="modal-sub">
-      Resuelve el CAPTCHA una vez al mes.<br>
-      El resto es completamente automático.
-    </div>
-    <div class="modal-captcha">
-      <div class="g-recaptcha"
-        data-sitekey="6Ldt7MgsAAAAAPQw-L8E8xxGhSM7Jsa0RoJMbUIH"
-        data-callback="onCaptchaResuelto"
-        data-expired-callback="onCaptchaExpirado"
-        data-theme="dark">
-      </div>
-    </div>
-    <div class="modal-status" id="modal-status">Resuelve el CAPTCHA para continuar...</div>
-    <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
-  </div>
-</div>
 
 <nav>
   <div class="nav-brand">⚡ GESTOR DE LUZ <span class="nav-badge">INMUEBLE R-8</span></div>
@@ -180,8 +163,12 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
       </div>
     </div>
     <div class="else-bottom">
-      <button class="btn-else" onclick="abrirModal()">⟳ OBTENER DE ELSE</button>
+      <button class="btn-else" id="btn-obtener" onclick="abrirPopupELSE()">⟳ OBTENER DE ELSE</button>
       <div class="else-status" id="else-status">Haz clic para cargar datos del mes actual</div>
+    </div>
+    <div class="popup-instruccion" id="popup-instruccion">
+      <strong>Ventana abierta →</strong> Ingresa tu suministro, resuelve el CAPTCHA y espera.<br>
+      Los datos se cargarán aquí automáticamente al detectar el recibo.
     </div>
   </div>
 
@@ -248,7 +235,10 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 </div>
 
 <script>
+const SUMINISTRO = '0010512230';
 const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+let elsePopup = null;
 
 let state = {
   mes: 'Abril 2026',
@@ -386,54 +376,73 @@ function nuevoMes() {
   renderTabla();
 }
 
-// ── CAPTCHA MODAL ──
-function abrirModal() {
-  document.getElementById('modal-captcha').classList.add('active');
-  document.getElementById('modal-status').className = 'modal-status';
-  document.getElementById('modal-status').textContent = 'Resuelve el CAPTCHA para continuar...';
+// ── POPUP ELSE ──────────────────────────────────────────────────
+function abrirPopupELSE() {
+  const btn = document.getElementById('btn-obtener');
+  const status = document.getElementById('else-status');
+  const instruccion = document.getElementById('popup-instruccion');
+
+  // Abrir popup de ELSE con suministro prellenado via hash
+  const url = `https://app.else.com.pe/PagoVisaInvitado/#bridge&sum=${SUMINISTRO}`;
+  elsePopup = window.open(url, 'ELSE_POPUP', 'width=800,height=650,left=100,top=100');
+
+  btn.disabled = true;
+  status.className = 'else-status loading';
+  status.textContent = '⟳ Esperando que resuelvas el CAPTCHA en la ventana...';
+  instruccion.classList.add('visible');
+
+  // Inyectar script bridge en el popup cuando cargue
+  const checkPopup = setInterval(() => {
+    try {
+      if (elsePopup && elsePopup.closed) {
+        clearInterval(checkPopup);
+        btn.disabled = false;
+        instruccion.classList.remove('visible');
+        if (status.className.includes('loading')) {
+          status.className = 'else-status err';
+          status.textContent = '✗ Ventana cerrada sin obtener datos';
+        }
+      }
+    } catch(e) {}
+  }, 1000);
 }
 
-function cerrarModal() {
-  document.getElementById('modal-captcha').classList.remove('active');
-  try { grecaptcha.reset(); } catch(e) {}
-}
+// Escuchar mensaje del popup con el token de ELSE
+window.addEventListener('message', async (event) => {
+  if (event.data?.type !== 'ELSE_TOKEN') return;
 
-function onCaptchaExpirado() {
-  document.getElementById('modal-status').className = 'modal-status err';
-  document.getElementById('modal-status').textContent = 'CAPTCHA expirado, intenta de nuevo';
-}
+  const token = event.data.token;
+  const status = document.getElementById('else-status');
+  const instruccion = document.getElementById('popup-instruccion');
+  const btn = document.getElementById('btn-obtener');
 
-async function onCaptchaResuelto(token) {
-  const status = document.getElementById('modal-status');
-  status.className = 'modal-status loading';
+  // Cerrar popup
+  if (elsePopup && !elsePopup.closed) elsePopup.close();
+  instruccion.classList.remove('visible');
+
+  status.className = 'else-status loading';
+  status.textContent = '⟳ Token recibido — descargando PDF...';
 
   try {
-    status.textContent = '⟳ Iniciando sesión en ELSE...';
-    const sesResp = await fetch('/api/else?action=sesion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recaptchaToken: token, suministro: '0010512230' })
-    });
-    const ses = await sesResp.json();
-    if (!ses.exito || !ses.datos) throw new Error(ses.mensaje || 'Sin token de sesión');
-
-    status.textContent = '⟳ Descargando recibo PDF...';
+    // Descargar PDF con el token de sesión
     const pdfResp = await fetch('/api/else?action=pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: ses.datos })
+      body: JSON.stringify({ token })
     });
     const pdfData = await pdfResp.json();
     if (!pdfData.pdf) throw new Error('No se pudo descargar el PDF');
 
-    status.textContent = '⟳ Extrayendo datos con IA (Gemini)...';
+    status.textContent = '⟳ Extrayendo datos con Gemini...';
+
+    // Gemini extrae los 6 valores
     const extResp = await fetch('/api/else?action=extraer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pdfBase64: pdfData.pdf })
     });
     const extData = await extResp.json();
-    if (!extData.ok || !extData.valores) throw new Error('No se pudieron extraer los valores del PDF');
+    if (!extData.ok || !extData.valores) throw new Error('No se pudieron extraer los valores');
 
     const v = extData.valores;
     document.getElementById('e-alumbrado').value = v.alumbrado_publico     || 0;
@@ -444,22 +453,55 @@ async function onCaptchaResuelto(token) {
     document.getElementById('e-total').value     = v.total_a_pagar         || 0;
     recalcular();
 
-    status.className = 'modal-status ok';
-    status.textContent = `✓ Datos obtenidos · Total ELSE: S/ ${v.total_a_pagar}`;
-
-    setTimeout(() => {
-      cerrarModal();
-      const es = document.getElementById('else-status');
-      es.className = 'else-status ok';
-      es.textContent = `✓ Actualizado · Total ELSE: S/ ${v.total_a_pagar}`;
-    }, 2000);
+    status.className = 'else-status ok';
+    status.textContent = `✓ Datos actualizados · Total ELSE: S/ ${v.total_a_pagar}`;
 
   } catch(e) {
-    status.className = 'modal-status err';
+    status.className = 'else-status err';
     status.textContent = '✗ ' + e.message;
-    try { grecaptcha.reset(); } catch(err) {}
+  } finally {
+    btn.disabled = false;
   }
-}
+});
+
+// ── Inyectar bridge en el popup de ELSE ─────────────────────────
+// Cuando el popup cargue ELSE, inyectamos un script que intercepta
+// la respuesta de SesionELSE y manda el token via postMessage
+setInterval(() => {
+  if (!elsePopup || elsePopup.closed) return;
+  try {
+    // Solo si estamos en el dominio de ELSE
+    if (!elsePopup.location.href.includes('else.com.pe')) return;
+
+    // Verificar si ya inyectamos el bridge
+    if (elsePopup._bridgeInjected) return;
+    elsePopup._bridgeInjected = true;
+
+    // Inyectar interceptor de fetch
+    elsePopup.eval(`
+      if (!window._elseBridgeActive) {
+        window._elseBridgeActive = true;
+        const _origFetch = window.fetch;
+        window.fetch = async function(...args) {
+          const response = await _origFetch.apply(this, args);
+          const url = typeof args[0] === 'string' ? args[0] : '';
+          if (url.includes('SesionELSE')) {
+            try {
+              const clone = response.clone();
+              const json = await clone.json();
+              if (json.exito && json.datos) {
+                window.opener && window.opener.postMessage({ type: 'ELSE_TOKEN', token: json.datos }, '*');
+              }
+            } catch(e) {}
+          }
+          return response;
+        };
+      }
+    `);
+  } catch(e) {
+    // Cross-origin — no podemos inyectar todavía
+  }
+}, 500);
 
 function showView(name, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));

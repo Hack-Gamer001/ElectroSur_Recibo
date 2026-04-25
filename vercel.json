@@ -1,10 +1,11 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/index.html" }
+  "version": 2,
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "api/else.js", "use": "@vercel/node" }
   ],
-  "functions": {
-    "api/else.js": {
-      "maxDuration": 30
-    }
-  }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/else.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }

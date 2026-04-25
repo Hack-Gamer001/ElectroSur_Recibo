@@ -386,13 +386,30 @@ function abrirPopup() {
       return;
     }
 
-    // Intentar inyectar el bridge (solo funciona si cargó la página)
+    // Intentar inyectar el bridge y autocompletar
     try {
       if (elsePopup.location.href.includes('else.com.pe') && !elsePopup._bridgeOk) {
         elsePopup._bridgeOk = true;
         elsePopup.eval(`
           if (!window._bridge) {
             window._bridge = true;
+
+            // Autocompletar suministro y hacer clic
+            function autoFill() {
+              const input = document.querySelector('input[type="tel"], input[placeholder*="Suministro"], input[placeholder*="suministro"]');
+              const btn = document.querySelector('button.btn-primary, button[type="button"]');
+              if (input && btn) {
+                input.value = '0010512230';
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                setTimeout(() => btn.click(), 800);
+              } else {
+                setTimeout(autoFill, 500);
+              }
+            }
+            autoFill();
+
+            // Interceptar fetch para capturar token
             const _f = window.fetch;
             window.fetch = async function(...a) {
               const r = await _f.apply(this, a);
@@ -411,7 +428,7 @@ function abrirPopup() {
         `);
       }
     } catch(e) {
-      // Cross-origin todavía cargando — normal
+      // Cross-origin todavía cargando
     }
   }, 300);
 }

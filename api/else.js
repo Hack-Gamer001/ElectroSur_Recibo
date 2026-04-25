@@ -7,12 +7,9 @@ export default async function handler(req, res) {
   const { action } = req.query;
 
   try {
-
-    // ── SESION: recibe token de ELSE directamente ──────────────
     if (action === 'sesion') {
       const { recaptchaToken, suministro } = req.body;
-
-      const sesResp = await fetch('https://appsrv.else.com.pe/wApiPagoVisa/SesionELSE/', {
+      const resp = await fetch('https://appsrv.else.com.pe/wApiPagoVisa/SesionELSE/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -20,21 +17,13 @@ export default async function handler(req, res) {
           'Referer': 'https://app.else.com.pe/',
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         },
-        body: JSON.stringify({
-          buscarPor: 'sum',
-          nroDocumento: suministro || '0010512230',
-          recaptchaToken
-        })
+        body: JSON.stringify({ buscarPor: 'sum', nroDocumento: suministro || '0010512230', recaptchaToken })
       });
-
-      const data = await sesResp.json();
-      return res.status(200).json(data);
+      return res.status(200).json(await resp.json());
     }
 
-    // ── PDF: descargar con token de sesión ─────────────────────
     if (action === 'pdf') {
       const { token } = req.body;
-
       const resp = await fetch('https://appsrv.else.com.pe/pdf', {
         headers: {
           'Authorization': 'ElsePagoVisa ' + token,
@@ -43,17 +32,14 @@ export default async function handler(req, res) {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
       });
-
       const buffer = await resp.arrayBuffer();
       const base64 = Buffer.from(buffer).toString('base64');
       return res.status(200).json({ pdf: base64, size: buffer.byteLength });
     }
 
-    // ── EXTRAER: Gemini lee el PDF ─────────────────────────────
     if (action === 'extraer') {
       const { pdfBase64 } = req.body;
       const GEMINI_KEY = process.env.GEMINI_API_KEY;
-
       if (!GEMINI_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY no configurada' });
 
       const geminiResp = await fetch(
@@ -75,7 +61,6 @@ export default async function handler(req, res) {
 
       const geminiData = await geminiResp.json();
       const texto = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-
       try {
         const valores = JSON.parse(texto.replace(/```json|```/g, '').trim());
         return res.status(200).json({ ok: true, valores });
@@ -85,7 +70,6 @@ export default async function handler(req, res) {
     }
 
     return res.status(400).json({ error: 'Acción no válida' });
-
   } catch(e) {
     return res.status(500).json({ error: e.message });
   }

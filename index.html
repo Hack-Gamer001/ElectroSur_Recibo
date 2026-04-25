@@ -23,8 +23,6 @@ nav { background: var(--accent); color: white; padding: 0 2rem; display: flex; a
 .nav-tab.active { color: var(--highlight); border-bottom-color: var(--highlight); }
 .view { display: none; padding: 2rem; max-width: 1100px; margin: 0 auto; }
 .view.active { display: block; }
-
-/* ELSE PANEL */
 .else-panel { background: var(--accent); color: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
 .else-label { font-size: 0.65rem; letter-spacing: 0.15em; color: var(--highlight); margin-bottom: 1rem; font-family: var(--mono); }
 .else-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
@@ -42,31 +40,14 @@ nav { background: var(--accent); color: white; padding: 0 2rem; display: flex; a
 .else-status.ok { color: #52b788; }
 .else-status.err { color: #e63946; }
 .else-status.loading { color: var(--highlight); }
-
-/* INSTRUCCION POPUP */
-.popup-instruccion {
-  background: rgba(232,197,71,0.1);
-  border: 1px solid rgba(232,197,71,0.3);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  margin-top: 1rem;
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.7);
-  line-height: 1.6;
-  display: none;
-}
+.popup-instruccion { background: rgba(232,197,71,0.1); border: 1px solid rgba(232,197,71,0.3); border-radius: 8px; padding: 0.75rem 1rem; margin-top: 1rem; font-family: var(--mono); font-size: 0.72rem; color: rgba(255,255,255,0.7); line-height: 1.6; display: none; }
 .popup-instruccion.visible { display: block; }
 .popup-instruccion strong { color: var(--highlight); }
-
-/* MES BAR */
 .mes-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
 .mes-titulo { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
 .mes-sub { font-size: 0.75rem; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
 .btn-nuevo-mes { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 0.65rem 1.25rem; font-family: var(--sans); font-size: 0.78rem; font-weight: 600; cursor: pointer; }
 .btn-nuevo-mes:hover { background: #2d3561; }
-
-/* TABLA */
 .tabla-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
 table.main { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 0.82rem; }
 table.main thead tr { background: var(--accent); color: white; }
@@ -83,8 +64,6 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 .td-calc { background: #f0efe8; font-weight: 500; color: var(--accent); }
 .td-total { background: var(--accent); color: var(--highlight); font-weight: 600; font-size: 0.88rem !important; }
 .suspendido { opacity: 0.35; }
-
-/* RESUMEN */
 .resumen-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1.5rem; }
 @media (max-width: 700px) { .resumen-grid { grid-template-columns: 1fr 1fr; } }
 .resumen-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; }
@@ -93,8 +72,6 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 .resumen-card.dark { background: var(--accent); border-color: var(--accent); }
 .resumen-card.dark .resumen-label { color: rgba(255,255,255,0.4); }
 .resumen-card.dark .resumen-val { color: var(--highlight); }
-
-/* TICKETS */
 .tickets-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
 .btn-print { background: var(--highlight); color: var(--accent); border: none; border-radius: 8px; padding: 0.65rem 1.25rem; font-family: var(--sans); font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 .tickets-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
@@ -109,7 +86,6 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 .ticket-total-label { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; color: var(--muted); }
 .ticket-total-val { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
 .ticket-pie { margin-top: 0.5rem; font-size: 0.62rem; color: var(--muted); text-align: center; }
-
 @media print {
   nav, .else-panel, .mes-bar button, .btn-print { display: none !important; }
   body { background: white; }
@@ -131,7 +107,6 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 </nav>
 
 <div class="view active" id="view-calculo">
-
   <div class="else-panel">
     <div class="else-label">▸ DATOS DEL RECIBO ELSE — SUMINISTRO 0010512230</div>
     <div class="else-fields">
@@ -163,12 +138,12 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
       </div>
     </div>
     <div class="else-bottom">
-      <button class="btn-else" id="btn-obtener" onclick="abrirPopupELSE()">⟳ OBTENER DE ELSE</button>
+      <button class="btn-else" id="btn-obtener" onclick="abrirPopup()">⟳ OBTENER DE ELSE</button>
       <div class="else-status" id="else-status">Haz clic para cargar datos del mes actual</div>
     </div>
     <div class="popup-instruccion" id="popup-instruccion">
       <strong>Ventana abierta →</strong> Ingresa tu suministro, resuelve el CAPTCHA y espera.<br>
-      Los datos se cargarán aquí automáticamente al detectar el recibo.
+      Los datos se cargarán aquí automáticamente.
     </div>
   </div>
 
@@ -237,7 +212,6 @@ table.main td input[type="number"]:focus { border-color: var(--accent); backgrou
 <script>
 const SUMINISTRO = '0010512230';
 const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-
 let elsePopup = null;
 
 let state = {
@@ -266,10 +240,10 @@ function cargar() {
 function getCampos() {
   return {
     alumbrado: parseFloat(document.getElementById('e-alumbrado').value) || 0,
-    cargo:     parseFloat(document.getElementById('e-cargo').value)     || 0,
-    electrif:  parseFloat(document.getElementById('e-electrif').value)  || 0,
-    precio:    parseFloat(document.getElementById('e-precio').value)    || 0,
-    fose:      parseFloat(document.getElementById('e-fose').value)      || 0,
+    cargo:     parseFloat(document.getElementById('e-cargo').value) || 0,
+    electrif:  parseFloat(document.getElementById('e-electrif').value) || 0,
+    precio:    parseFloat(document.getElementById('e-precio').value) || 0,
+    fose:      parseFloat(document.getElementById('e-fose').value) || 0,
   };
 }
 
@@ -376,38 +350,73 @@ function nuevoMes() {
   renderTabla();
 }
 
-// ── POPUP ELSE ──────────────────────────────────────────────────
-function abrirPopupELSE() {
-  const btn = document.getElementById('btn-obtener');
+// ── POPUP ──────────────────────────────────────────────────────
+function abrirPopup() {
+  // Abrir popup directamente desde clic — sin async para evitar bloqueo
+  elsePopup = window.open(
+    'https://app.else.com.pe/PagoVisaInvitado/',
+    'ELSE_POPUP',
+    'width=850,height=680,left=50,top=50,resizable=yes,scrollbars=yes'
+  );
+
+  if (!elsePopup) {
+    alert('El navegador bloqueó la ventana emergente.\nPor favor permite ventanas emergentes para este sitio en la barra de URL.');
+    return;
+  }
+
   const status = document.getElementById('else-status');
   const instruccion = document.getElementById('popup-instruccion');
-
-  // Abrir popup de ELSE con suministro prellenado via hash
-  const url = `https://app.else.com.pe/PagoVisaInvitado/#bridge&sum=${SUMINISTRO}`;
-  elsePopup = window.open(url, 'ELSE_POPUP', 'width=800,height=650,left=100,top=100');
+  const btn = document.getElementById('btn-obtener');
 
   btn.disabled = true;
   status.className = 'else-status loading';
   status.textContent = '⟳ Esperando que resuelvas el CAPTCHA en la ventana...';
   instruccion.classList.add('visible');
 
-  // Inyectar script bridge en el popup cuando cargue
-  const checkPopup = setInterval(() => {
-    try {
-      if (elsePopup && elsePopup.closed) {
-        clearInterval(checkPopup);
-        btn.disabled = false;
-        instruccion.classList.remove('visible');
-        if (status.className.includes('loading')) {
-          status.className = 'else-status err';
-          status.textContent = '✗ Ventana cerrada sin obtener datos';
-        }
+  // Monitorear popup y tratar de inyectar bridge
+  const monitor = setInterval(() => {
+    if (!elsePopup || elsePopup.closed) {
+      clearInterval(monitor);
+      btn.disabled = false;
+      instruccion.classList.remove('visible');
+      if (status.className.includes('loading')) {
+        status.className = 'else-status err';
+        status.textContent = '✗ Ventana cerrada sin obtener datos';
       }
-    } catch(e) {}
-  }, 1000);
+      return;
+    }
+
+    // Intentar inyectar el bridge (solo funciona si cargó la página)
+    try {
+      if (elsePopup.location.href.includes('else.com.pe') && !elsePopup._bridgeOk) {
+        elsePopup._bridgeOk = true;
+        elsePopup.eval(`
+          if (!window._bridge) {
+            window._bridge = true;
+            const _f = window.fetch;
+            window.fetch = async function(...a) {
+              const r = await _f.apply(this, a);
+              const u = typeof a[0] === 'string' ? a[0] : '';
+              if (u.includes('SesionELSE')) {
+                try {
+                  const j = await r.clone().json();
+                  if (j.exito && j.datos) {
+                    window.opener && window.opener.postMessage({type:'ELSE_TOKEN',token:j.datos}, '*');
+                  }
+                } catch(e) {}
+              }
+              return r;
+            };
+          }
+        `);
+      }
+    } catch(e) {
+      // Cross-origin todavía cargando — normal
+    }
+  }, 300);
 }
 
-// Escuchar mensaje del popup con el token de ELSE
+// Recibir token del popup
 window.addEventListener('message', async (event) => {
   if (event.data?.type !== 'ELSE_TOKEN') return;
 
@@ -416,15 +425,13 @@ window.addEventListener('message', async (event) => {
   const instruccion = document.getElementById('popup-instruccion');
   const btn = document.getElementById('btn-obtener');
 
-  // Cerrar popup
   if (elsePopup && !elsePopup.closed) elsePopup.close();
   instruccion.classList.remove('visible');
 
   status.className = 'else-status loading';
-  status.textContent = '⟳ Token recibido — descargando PDF...';
+  status.textContent = '⟳ Token capturado — descargando PDF...';
 
   try {
-    // Descargar PDF con el token de sesión
     const pdfResp = await fetch('/api/else?action=pdf', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -435,7 +442,6 @@ window.addEventListener('message', async (event) => {
 
     status.textContent = '⟳ Extrayendo datos con Gemini...';
 
-    // Gemini extrae los 6 valores
     const extResp = await fetch('/api/else?action=extraer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -463,45 +469,6 @@ window.addEventListener('message', async (event) => {
     btn.disabled = false;
   }
 });
-
-// ── Inyectar bridge en el popup de ELSE ─────────────────────────
-// Cuando el popup cargue ELSE, inyectamos un script que intercepta
-// la respuesta de SesionELSE y manda el token via postMessage
-setInterval(() => {
-  if (!elsePopup || elsePopup.closed) return;
-  try {
-    // Solo si estamos en el dominio de ELSE
-    if (!elsePopup.location.href.includes('else.com.pe')) return;
-
-    // Verificar si ya inyectamos el bridge
-    if (elsePopup._bridgeInjected) return;
-    elsePopup._bridgeInjected = true;
-
-    // Inyectar interceptor de fetch
-    elsePopup.eval(`
-      if (!window._elseBridgeActive) {
-        window._elseBridgeActive = true;
-        const _origFetch = window.fetch;
-        window.fetch = async function(...args) {
-          const response = await _origFetch.apply(this, args);
-          const url = typeof args[0] === 'string' ? args[0] : '';
-          if (url.includes('SesionELSE')) {
-            try {
-              const clone = response.clone();
-              const json = await clone.json();
-              if (json.exito && json.datos) {
-                window.opener && window.opener.postMessage({ type: 'ELSE_TOKEN', token: json.datos }, '*');
-              }
-            } catch(e) {}
-          }
-          return response;
-        };
-      }
-    `);
-  } catch(e) {
-    // Cross-origin — no podemos inyectar todavía
-  }
-}, 500);
 
 function showView(name, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
